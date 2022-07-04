@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/models/user_models.dart';
 import 'package:flutter_application_2/page/page2/pageview2.dart';
@@ -23,15 +25,18 @@ class FirstPage extends StatefulWidget {
 
 class _FirstPageState extends State<FirstPage> {
   List userList = <User>[];
+  List showusermodelshow = [];
+  List showusermodelV2 = [];
+  List showusermodel = [];
 
   Future<void> fetchUser() async {
     UserService requsert = UserService();
     requsert.getUser().then((value) {
-      print('value ==> ${value.data}');
+      // print('value ==> ${value.data}');
       if (value.statusCode == 200) {
         for (var item in value.data) {
           userList.add(User.fromJson(item));
-          print('item ==> ${item}');
+          // print('item ==> ${item}');
         }
       } else {
         print('Backend error');
@@ -40,14 +45,51 @@ class _FirstPageState extends State<FirstPage> {
     }).catchError((onError) {});
   }
 
+  setNewDataYear(List? newData) async {
+    setState(() {
+      showusermodelshow = newData!;
+    });
+  }
+
+  findDataYear(String? value) {
+    if (value!.isNotEmpty) {
+      //print(value.runtimeType);
+      String _keyword = value.toLowerCase();
+      var data = showusermodel.where(
+        (element) =>
+            element['glass'].toString().toLowerCase().contains(_keyword) ||
+            element['iron'].toString().toLowerCase().contains(_keyword),
+      );
+      //print(data);
+      setState(() {
+        showusermodel = data.toList();
+      });
+    } else {
+      showusermodel = showusermodelV2;
+      // print(dataBranchCopy);
+      setState(() {});
+    }
+  }
+
   bool checkedValue = false;
-  late List<_ChartData> data;
+  late List<_ChartData> data5;
   late TooltipBehavior _tooltip;
   late TooltipBehavior _tooltip2;
 
+  void _listener() {
+    FirebaseDatabase.instance.ref().child('test').onValue.listen((event) {
+      print(event.snapshot.value);
+      Map<String, dynamic> v = (event.snapshot.value) as Map<String, dynamic>;
+      // int a = v['a'];
+      // int b = v['b'];
+      // print("a: ${a}");
+      // print("b: ${b}");
+    });
+  }
+
   @override
   void initState() {
-    data = [
+    data5 = [
       _ChartData('ขวด', 12, Colors.green),
       _ChartData('กระดาษ', 15, Colors.teal),
       _ChartData('แก้ว', 30, Colors.teal),
@@ -57,100 +99,16 @@ class _FirstPageState extends State<FirstPage> {
     _tooltip = TooltipBehavior(enable: true);
     _tooltip2 = TooltipBehavior(enable: true);
 
+    setNewDataYear(userList);
     fetchUser().then((value) {
       print('fetchUser');
     });
 
+    _listener();
+
     super.initState();
     print('initState');
   }
-
-  List<Map> data2 = [
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics'
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-  ];
 
   @override
   // final List<ChartData> chartData = [
@@ -162,7 +120,7 @@ class _FirstPageState extends State<FirstPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ashgajkglwgsad'),
+        title: const Text('ashgajkglwgsad'),
       ),
       body: ListView.builder(
         itemCount: userList.length,
@@ -216,7 +174,7 @@ class _FirstPageState extends State<FirstPage> {
                     side: const BorderSide(
                       style: BorderStyle.none,
                     ),
-                    backgroundColor: Color(0xff64AE25),
+                    backgroundColor: const Color(0xff64AE25),
                     primary: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     textStyle: const TextStyle(
@@ -226,26 +184,33 @@ class _FirstPageState extends State<FirstPage> {
                 ),
               ),
               myDivider(),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               SizedBox(
                 height: 180,
-                child: Expanded(
-                  // flex: 2,
-                  child: SfCartesianChart(
+                child: Consumer(
+                  builder: (context, controller, child) => SfCartesianChart(
+                    title: ChartTitle(text: "ยอดขายรายงานประจำปี"),
                     primaryXAxis: CategoryAxis(),
+                    // Chart title
                     primaryYAxis:
                         NumericAxis(minimum: 0, maximum: 40, interval: 10),
+
+                    // Enable legend
+                    legend: Legend(isVisible: false),
+                    // Enable tooltip
                     tooltipBehavior: TooltipBehavior(enable: true),
-                    series: <ChartSeries<dynamic, dynamic>>[
+                    series: <ChartSeries<_ChartData, dynamic>>[
                       ColumnSeries(
-                          dataSource: userList,
-                          xValueMapper: (data, _) => data['glass'],
-                          yValueMapper: (data, _) => data['paper'],
-                          pointColorMapper: (data, _) => data.color,
-                          name: 'Gold',
-                          color: const Color.fromRGBO(8, 142, 255, 1))
+                          dataSource: data5,
+                          xValueMapper: (data, _) => data.x,
+                          yValueMapper: (data, _) => data.y,
+                          name: 'ยอดขายสุทธิรวม VAT',
+
+                          // Enable data label
+                          dataLabelSettings:
+                              const DataLabelSettings(isVisible: false))
                     ],
                   ),
                 ),
@@ -312,7 +277,7 @@ class _FirstPageState extends State<FirstPage> {
                           child: Center(
                             child: Text(
                               "ราคาอดีต \n   ${userList[index].glass}",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 50,
                                 color: Colors.black,
                               ),
@@ -336,7 +301,7 @@ class _FirstPageState extends State<FirstPage> {
                               PieSeries<_ChartData, String>(
                                   dataLabelSettings:
                                       const DataLabelSettings(isVisible: true),
-                                  dataSource: data,
+                                  dataSource: data5,
 
                                   // pointColorMapper:(_ChartData data, _) => data.color,
                                   xValueMapper: (_ChartData data, _) => data.x,
@@ -400,33 +365,52 @@ class _FirstPageState extends State<FirstPage> {
 
   List<DataColumn> _createColumns() {
     return [
-      DataColumn(label: Text('ID')),
-      DataColumn(label: Text('Book')),
-      DataColumn(label: Text('Author')),
-      DataColumn(label: Text('title2'))
+      const DataColumn(label: Text('ID')),
+      const DataColumn(label: Text('Book')),
+      const DataColumn(label: Text('Author')),
+      const DataColumn(label: Text('title2')),
+      const DataColumn(label: Text('title2')),
+      const DataColumn(label: Text('title2')),
     ];
   }
 
   List<DataRow> _createRows() {
-    return data2
-        .map((data2) => DataRow(cells: [
-              DataCell(Text(data2['id'].toString())),
-              DataCell(Text(data2['title'])),
-              DataCell(Text(data2['author'])),
-              DataCell(Text(data2['title2']))
-            ]))
-        .toList();
+    return List.generate(
+      userList.length,
+      (index) => DataRow(
+        cells: [
+          DataCell(
+            Text('${userList[index].id}'),
+          ),
+          DataCell(
+            Text('${userList[index].glass}'),
+          ),
+          DataCell(
+            Text('${userList[index].paper}'),
+          ),
+          DataCell(
+            Text('${userList[index].iron}'),
+          ),
+          DataCell(
+            Text('${userList[index].lightbulb}'),
+          ),
+          DataCell(
+            Text('${userList[index].bottle}'),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-// class ChartData {
-//   ChartData(
-//     this.x,
-//     this.y,
-//   );
-//   final String x;
-//   final double y;
-// }
+class ChartData {
+  ChartData(
+    this.x,
+    this.y,
+  );
+  final String x;
+  final double y;
+}
 
 class _ChartData {
   _ChartData(this.x, this.y, this.color);
@@ -444,98 +428,71 @@ class FirstPagetwo extends StatefulWidget {
 }
 
 class _FirstPagetwoState extends State<FirstPagetwo> {
-  List<Map> data2 = [
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics'
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 100,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-    {
-      'id': 115,
-      'title': 'Flutter Basics',
-      'author': 'David John',
-      'title2': 'Flutter Basics',
-    },
-  ];
+  List userList = <User>[];
+
+  var currentStep = 0;
+  var glass = TextEditingController();
+  var paper = TextEditingController();
+  var iron = TextEditingController();
+  var lightbulb = TextEditingController();
+  var bottle = TextEditingController();
+
+  void addUser() async {
+    UserService requsert = UserService();
+    var reqbody = await {
+      "id": null,
+      "glass": glass.text,
+      "paper": paper.text,
+      "iron": iron.text,
+      "lightbulb": lightbulb.text,
+      "bottle": bottle.text,
+    };
+    print('reqbody ===> ${reqbody}');
+    await requsert.postUser(reqbody).then(
+          (value) => {
+            if (value.statusCode == 201) {}
+            // {print('value ===> ${value}'),('/home')}
+          },
+        );
+  }
+
+  void _addUser() {
+    addUser();
+    setState(() {});
+  }
+
+  Future<void> fetchUser() async {
+    UserService requsert = UserService();
+    requsert.getUser().then((value) {
+      print('value ==> ${value.data}');
+      if (value.statusCode == 200) {
+        for (var item in value.data) {
+          userList.add(User.fromJson(item));
+          print('item ==> ${item}');
+        }
+      } else {
+        print('Backend error');
+      }
+      setState(() {});
+    }).catchError((onError) {});
+  }
+
+  @override
+  void initState() {
+    fetchUser().then((value) {
+      print('fetchUser');
+    });
+
+    super.initState();
+    print('initState');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // key: _formKey,
       appBar: AppBar(
-        title: Text('Pagetwo'),
+        title: const Text('Pagetwo'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -561,33 +518,31 @@ class _FirstPagetwoState extends State<FirstPagetwo> {
               ],
             ),
             Row(
-              children: const [
+              children: [
                 Expanded(
-                  child: Flexible(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: 'เพิ่มข้อมูล',
-                        border: OutlineInputBorder(),
-                      ),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'เพิ่มข้อมูล',
+                      border: OutlineInputBorder(),
                     ),
+                    controller: glass,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 20,
                 ),
                 Expanded(
-                  child: Flexible(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: 'เพิ่มข้อมูล',
-                        border: OutlineInputBorder(),
-                      ),
+                  child: TextField(
+                    controller: bottle,
+                    decoration: const InputDecoration(
+                      labelText: 'เพิ่มข้อมูล',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Row(
@@ -621,47 +576,90 @@ class _FirstPagetwoState extends State<FirstPagetwo> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const [
+              children: [
                 Expanded(
-                  child: Flexible(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: 'เพิ่มข้อมูล',
-                        border: OutlineInputBorder(),
-                      ),
+                  child: TextField(
+                    controller: iron,
+                    decoration: const InputDecoration(
+                      labelText: 'เพิ่มข้อมูล',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 20,
                 ),
                 Expanded(
-                  child: Flexible(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: 'เพิ่มข้อมูล',
-                        border: OutlineInputBorder(),
-                      ),
+                  child: TextField(
+                    controller: lightbulb,
+                    decoration: const InputDecoration(
+                      labelText: 'เพิ่มข้อมูล',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 20,
                 ),
                 Expanded(
-                  child: Flexible(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: 'เพิ่มข้อมูล',
-                        border: OutlineInputBorder(),
-                      ),
+                  child: TextField(
+                    controller: paper,
+                    decoration: const InputDecoration(
+                      labelText: 'เพิ่มข้อมูล',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 150,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        addUser();
+
+                        setState(() {});
+                      },
+                      child: Container(
+                        // เราใช้ container ขายปุ่มให้เต็มพื้นที่
+                        alignment: Alignment.center, // จัดข้อความตรงกลาง
+                        width: double.infinity, // กำหนดความกว้างให้เต็ม
+                        child: const Text('Add New Book'),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Expanded(
+                  child: Container(
+                    height: 150,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        glass.clear();
+                        paper.clear();
+                        iron.clear();
+                        lightbulb.clear();
+                        bottle.clear();
+                        setState(() {});
+                      },
+                      child: Container(
+                        // เราใช้ container ขายปุ่มให้เต็มพื้นที่
+                        alignment: Alignment.center, // จัดข้อความตรงกลาง
+                        width: double.infinity, // กำหนดความกว้างให้เต็ม
+                        child: const Text('Add New Book'),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             Expanded(
               child: SizedBox(
@@ -705,7 +703,7 @@ class _FirstPagetwoState extends State<FirstPagetwo> {
 
   DataTable _createDataTable() {
     return DataTable(
-      columnSpacing: 430,
+      columnSpacing: 250,
       columns: _createColumns(),
       rows: _createRows(),
     );
@@ -713,22 +711,41 @@ class _FirstPagetwoState extends State<FirstPagetwo> {
 
   List<DataColumn> _createColumns() {
     return [
-      DataColumn(label: Text('ID')),
-      DataColumn(label: Text('Book')),
-      DataColumn(label: Text('Author')),
-      DataColumn(label: Text('title2'))
+      const DataColumn(label: Text('ID')),
+      const DataColumn(label: Text('Book')),
+      const DataColumn(label: Text('Author')),
+      const DataColumn(label: Text('title2')),
+      const DataColumn(label: Text('title2')),
+      const DataColumn(label: Text('title2')),
     ];
   }
 
   List<DataRow> _createRows() {
-    return data2
-        .map((data2) => DataRow(cells: [
-              DataCell(Text(data2['id'].toString())),
-              DataCell(Text(data2['title'])),
-              DataCell(Text(data2['author'])),
-              DataCell(Text(data2['title2']))
-            ]))
-        .toList();
+    return List.generate(
+      userList.length,
+      (index) => DataRow(
+        cells: [
+          DataCell(
+            Text('${userList[index].id}'),
+          ),
+          DataCell(
+            Text('${userList[index].glass}'),
+          ),
+          DataCell(
+            Text('${userList[index].paper}'),
+          ),
+          DataCell(
+            Text('${userList[index].iron}'),
+          ),
+          DataCell(
+            Text('${userList[index].lightbulb}'),
+          ),
+          DataCell(
+            Text('${userList[index].bottle}'),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -743,7 +760,7 @@ class FirstPage3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Page3')),
+      appBar: AppBar(title: const Text('Page3')),
       body: Center(
         child: Text('Page3', style: Theme.of(context).textTheme.headline4),
       ),
@@ -755,7 +772,7 @@ class FirstPage4 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Page4')),
+      appBar: AppBar(title: const Text('Page4')),
       body: Row(
         children: [
           Center(
@@ -771,7 +788,7 @@ class FirstPage5 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Page5')),
+      appBar: AppBar(title: const Text('Page5')),
       body: Center(
         child: Text('Page5', style: Theme.of(context).textTheme.headline4),
       ),
@@ -783,7 +800,7 @@ class FirstPage6 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Page6')),
+      appBar: AppBar(title: const Text('Page6')),
       body: Center(
         child: Text('Page6', style: Theme.of(context).textTheme.headline4),
       ),
